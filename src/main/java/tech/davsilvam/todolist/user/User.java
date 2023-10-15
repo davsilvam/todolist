@@ -29,8 +29,7 @@ public class User {
     this.setPassword(data.password());
   }
    
-  @Id
-  @GeneratedValue(generator = "UUID")
+  @Id @GeneratedValue(generator = "UUID")
   private UUID id;
 
   @Column(unique = true)
