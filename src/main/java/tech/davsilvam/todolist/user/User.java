@@ -24,9 +24,9 @@ import lombok.Setter;
 public class User {
 
   public User(UserRequestDTO data) {
-    this.username = data.username();
-    this.password = data.password();
-    this.name = data.name();
+    this.setUsername(data.username());
+    this.setName(data.name());
+    this.setPassword(data.password());
   }
    
   @Id

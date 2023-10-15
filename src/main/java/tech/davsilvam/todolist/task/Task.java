@@ -25,12 +25,12 @@ import lombok.Setter;
 public class Task {
 
   public Task(TaskRequestDTO data) throws Exception {
-    this.title = data.title();
-    this.description = data.description();
-    this.isCompleted = data.isCompleted();
-    this.startAt = data.startAt();
-    this.endAt = data.endAt();
-    this.priority = data.priority();
+    this.setTitle(data.title());
+    this.setDescription(data.description());
+    this.setIsCompleted(data.isCompleted());
+    this.setStartAt(data.startAt());
+    this.setEndAt(data.endAt());
+    this.setPriority(data.priority());
   }
 
   @Id @GeneratedValue(strategy = GenerationType.UUID)
@@ -60,7 +60,7 @@ public class Task {
   public void setStartAt(LocalDateTime startAt) throws Exception {
     var currentDate = LocalDateTime.now();
 
-    if (currentDate.isAfter(startAt)) {
+    if (startAt.isBefore(currentDate)) {
       throw new Exception("Start date must be after current date.");
     }
 
@@ -68,7 +68,7 @@ public class Task {
   }
 
   public void setEndAt(LocalDateTime endAt) throws Exception {
-    if (this.startAt.isAfter(endAt)) {
+    if (endAt.isBefore(this.startAt)) {
       throw new Exception("End date must be after start date.");
     }
 
