@@ -1,11 +1,12 @@
 package tech.davsilvam.todolist.task;
 
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,57 +19,61 @@ import jakarta.servlet.http.HttpServletRequest;
 import tech.davsilvam.todolist.utils.Utils;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("tasks")
 public class TaskController {
 
   @Autowired
   private ITaskRepository taskRepository;
 
-  @GetMapping("/")
-  public ResponseEntity<Object> fetch(HttpServletRequest request) {
-    var userId = request.getAttribute("userId");
-    var tasks = this.taskRepository.findByUserId((UUID) userId);
+  @CrossOrigin(origins = "*", allowedHeaders = "*")
+  @GetMapping
+  public ResponseEntity<List<TaskResponseDTO>> getAll(HttpServletRequest request) {
+    String userIdAttribute = request.getAttribute("userId").toString();
+    UUID userId = UUID.fromString(userIdAttribute);
+
+    List<TaskResponseDTO> tasks = taskRepository.findByUserId((UUID) userId).stream().map(TaskResponseDTO::new)
+        .toList();
 
     return ResponseEntity.status(HttpStatus.OK).body(tasks);
   }
 
-  @PostMapping("/")
-  public ResponseEntity<Object> create(@RequestBody TaskModel task, HttpServletRequest request) {
-    var userId = request.getAttribute("userId");
-    task.setUserId((UUID) userId);
+  @CrossOrigin(origins = "*", allowedHeaders = "*")
+  @PostMapping
+  public ResponseEntity<Task> save(@RequestBody TaskRequestDTO data, HttpServletRequest request) throws Exception {
+    Task newTask = new Task(data);
 
-    var currentDate = LocalDateTime.now();
+    String userIdAttribute = request.getAttribute("userId").toString();
+    UUID userId = UUID.fromString(userIdAttribute);
+    newTask.setUserId((UUID) userId);
 
-    if (currentDate.isAfter(task.getStartAt())) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start date must be after current date.");
-    }
-
-    if (task.getEndAt().isBefore(task.getStartAt())) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("End date must be after start date.");
-    }
-
-    var createdTask = this.taskRepository.save(task);
+    Task createdTask = taskRepository.save(newTask);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
   }
 
+  @CrossOrigin(origins = "*", allowedHeaders = "*")
   @PutMapping("/{id}")
-  public ResponseEntity<Object> update(@PathVariable UUID id, @RequestBody TaskModel task, HttpServletRequest request) {
-    var oldTask = this.taskRepository.findById(id).orElse(null);
+  public ResponseEntity<Task> update(@PathVariable UUID id, @RequestBody TaskRequestDTO data, HttpServletRequest request) throws Exception {
+    var oldTask = taskRepository.findById(id).orElse(null);
 
     if (oldTask == null) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task not found.");
+      ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+      throw new Exception("Task not found.");
     }
 
-    var userId = request.getAttribute("userId");
+    Task newTaskData = new Task(data);
+
+    String userIdAttribute = request.getAttribute("userId").toString();
+    UUID userId = UUID.fromString(userIdAttribute);
 
     if (!oldTask.getUserId().equals(userId)) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized to update this task.");
+      ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      throw new Exception("User not authorized to update this task.");
     }
 
-    Utils.copyNonNullProperties(task, oldTask);
+    Utils.copyNonNullProperties(newTaskData, oldTask);
 
-    var updatedTask = this.taskRepository.save(oldTask);
+    Task updatedTask = taskRepository.save(oldTask);
 
     return ResponseEntity.status(HttpStatus.OK).body(updatedTask);
   }
