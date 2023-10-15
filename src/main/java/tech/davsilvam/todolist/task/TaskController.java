@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -76,6 +77,29 @@ public class TaskController {
     Task updatedTask = taskRepository.save(oldTask);
 
     return ResponseEntity.status(HttpStatus.OK).body(updatedTask);
+  }
+
+  @CrossOrigin(origins = "*", allowedHeaders = "*")
+  @DeleteMapping("/{id}")
+  public ResponseEntity<String> delete(@PathVariable UUID id, HttpServletRequest request) throws Exception {
+    String userIdAttribute = request.getAttribute("userId").toString();
+    UUID userId = UUID.fromString(userIdAttribute);
+
+    Task task = taskRepository.findById(id).orElse(null);
+
+    if (task == null) {
+      ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+      throw new Exception("Task not found.");
+    }
+
+    if (!task.getUserId().equals(userId)) {
+      ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      throw new Exception("User not authorized to delete this task.");
+    }
+
+    taskRepository.delete(task);
+
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
 }
