@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import tech.davsilvam.todolist.utils.Utils;
 
 @RestController
-@RequestMapping("tasks")
+@RequestMapping("/tasks")
 public class TaskController {
 
   @Autowired

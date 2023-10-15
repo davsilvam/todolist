@@ -24,16 +24,8 @@ import lombok.Setter;
 @EqualsAndHashCode(of = "id")
 public class Task {
 
-  public Task(TaskRequestDTO data) throws Exception {
-    this.setTitle(data.title());
-    this.setDescription(data.description());
-    this.setIsCompleted(data.isCompleted());
-    this.setStartAt(data.startAt());
-    this.setEndAt(data.endAt());
-    this.setPriority(data.priority());
-  }
-
-  @Id @GeneratedValue(strategy = GenerationType.UUID)
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
   @Column(length = 50)
@@ -48,6 +40,15 @@ public class Task {
 
   @CreationTimestamp
   private LocalDateTime createdAt;
+
+  public Task(TaskRequestDTO data) throws Exception {
+    this.setTitle(data.title());
+    this.setDescription(data.description());
+    this.setIsCompleted(data.isCompleted());
+    this.setStartAt(data.startAt());
+    this.setEndAt(data.endAt());
+    this.setPriority(data.priority());
+  }
 
   public void setTitle(String title) throws Exception {
     if (title.length() > 50) {

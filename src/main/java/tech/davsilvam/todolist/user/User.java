@@ -23,23 +23,24 @@ import lombok.Setter;
 @EqualsAndHashCode(of = "id")
 public class User {
 
-  public User(UserRequestDTO data) {
-    this.setUsername(data.username());
-    this.setName(data.name());
-    this.setPassword(data.password());
-  }
-   
-  @Id @GeneratedValue(generator = "UUID")
+  @Id
+  @GeneratedValue(generator = "UUID")
   private UUID id;
 
   @Column(unique = true)
   private String username;
   private String name;
-  
+
   @Column(name = "password_hash")
   private String password;
 
   @CreationTimestamp
   private LocalDateTime createdAt;
+
+  public User(UserRequestDTO data) {
+    this.setUsername(data.username());
+    this.setName(data.name());
+    this.setPassword(data.password());
+  }
 
 }
